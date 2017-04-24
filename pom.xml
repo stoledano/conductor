@@ -41,8 +41,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -82,24 +82,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-            <configuration>
-              <keyname>${gpg.keyname}</keyname>
-              <passphraseServerId>${gpg.keyname}</passphraseServerId>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -108,8 +90,9 @@
   </scm>
 
   <properties>
-    <selenium_version>2.52.0</selenium_version>
-    <phantomjs_version>1.2.1</phantomjs_version>
+    <!--<selenium_version>2.52.0</selenium_version>-->
+    <selenium_version>3.4.0</selenium_version>
+    <selenium_older_version>2.52.0</selenium_older_version>
     <CONDUCTOR_URL>${env.CONDUCTOR_URL}</CONDUCTOR_URL>
     <CONDUCTOR_BROWSER>${env.CONDUCTOR_BROWSER}</CONDUCTOR_BROWSER>
     <CONDUCTOR_HUB>${env.CONDUCTOR_HUB}</CONDUCTOR_HUB>
@@ -119,12 +102,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
-    </dependency>
-    <dependency>
-      <groupId>com.codeborne</groupId>
-      <artifactId>phantomjsdriver</artifactId>
-      <version>${phantomjs_version}</version>
+      <version>4.12</version>
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
@@ -149,7 +127,7 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-htmlunit-driver</artifactId>
-      <version>${selenium_version}</version>
+      <version>${selenium_older_version}</version>
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
@@ -182,12 +160,12 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>2.0.2</version>
+      <version>2.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.0.2</version>
+      <version>2.2</version>
     </dependency>
   </dependencies>
 </project>

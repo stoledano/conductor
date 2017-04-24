@@ -19,10 +19,10 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -121,7 +121,8 @@ public class Locomotive implements Conductor<Locomotive> {
             case FIREFOX:
                 capabilities = DesiredCapabilities.firefox();
                 if (isLocal) try {
-                    driver = new FirefoxDriver(capabilities);
+                    driver = new FirefoxDriver();
+//                    driver = new FirefoxDriver(capabilities);
                 } catch (Exception x) {
                     x.printStackTrace();
                     logFatal("Also see https://github.com/conductor-framework/conductor/wiki/WebDriver-Executables");
@@ -159,19 +160,9 @@ public class Locomotive implements Conductor<Locomotive> {
                 }
                 break;
             case HTMLUNIT: // If you are designing a regression system, HtmlUnit is NOT recommended.
-                capabilities = DesiredCapabilities.htmlUnitWithJs();
+                capabilities = DesiredCapabilities.htmlUnit();
                 if (isLocal) try {
                     driver = new HtmlUnitDriver(capabilities);
-                } catch (Exception x) {
-                    x.printStackTrace();
-                    logFatal("Also see https://github.com/conductor-framework/conductor/wiki/WebDriver-Executables");
-                    System.exit(1);
-                }
-                break;
-            case PHANTOMJS:
-                capabilities = DesiredCapabilities.phantomjs();
-                if (isLocal) try {
-                    driver = new PhantomJSDriver(capabilities);
                 } catch (Exception x) {
                     x.printStackTrace();
                     logFatal("Also see https://github.com/conductor-framework/conductor/wiki/WebDriver-Executables");
@@ -202,6 +193,7 @@ public class Locomotive implements Conductor<Locomotive> {
         // Set the webdriver env vars.
         if (JvmUtil.getJvmProperty("os.name").toLowerCase().contains("mac")) {
             System.setProperty("webdriver.chrome.driver", findFile("chromedriver.mac"));
+            System.setProperty("webdriver.gecko.driver", findFile("geckodriver.mac"));
         } else if (JvmUtil.getJvmProperty("os.name").toLowerCase().contains("nix") ||
                    JvmUtil.getJvmProperty("os.name").toLowerCase().contains("nux") ||
                    JvmUtil.getJvmProperty("os.name").toLowerCase().contains("aix")
@@ -386,6 +378,10 @@ public class Locomotive implements Conductor<Locomotive> {
     }
 
     public Locomotive selectOptionByText(By by, String text) {
+        // Due to Safari issue selecting elements of dropdown
+        if (Browser.SAFARI.equals(configuration.browser())){
+            selectByTextInDropDown(by.toString().replace("By.cssSelector: ", ""), text);
+        }
         Select box = new Select(waitForElement(by));
         waitForCondition(ExpectedConditions.not(ExpectedConditions.invisibilityOfElementLocated(by)))
         .waitForCondition(ExpectedConditions.elementToBeClickable(by));
@@ -393,16 +389,39 @@ public class Locomotive implements Conductor<Locomotive> {
         return this;
     }
 
+    private void selectByTextInDropDown(String element, String text) {
+        element = element.replace("#", "");
+        JavascriptExecutor js = (JavascriptExecutor)driver;
+        String jsCmd =
+        "for (i = 0; i < document.getElementById('" + element + "').length; i++){" +
+            "if (document.getElementById('" + element + "').options[i].text == '" + text + "'){" +
+                "document.getElementById('" + element + "').value = i + 1;" +
+            "}" +
+        "}";
+        js.executeScript(jsCmd);
+    }
+
     public Locomotive selectOptionByValue(String css, String value) {
         return selectOptionByValue(By.cssSelector(css), value);
     }
 
     public Locomotive selectOptionByValue(By by, String value) {
+        // Due to Safari issue selecting elements of dropdown
+        if (Browser.SAFARI.equals(configuration.browser())){
+            selectByValueInDropDown(by.toString().replace("By.cssSelector: ", ""), value);
+        }
         Select box = new Select(waitForElement(by));
         waitForCondition(ExpectedConditions.not(ExpectedConditions.invisibilityOfElementLocated(by)))
         .waitForCondition(ExpectedConditions.elementToBeClickable(by));
         box.selectByValue(value);
         return this;
+    }
+
+    private void selectByValueInDropDown(String element, String value) {
+        element = element.replace("#", "");
+        JavascriptExecutor js = (JavascriptExecutor)driver;
+        String jsCmd = "document.getElementById('" + element + "').value='" + value + "'";
+        js.executeScript(jsCmd);
     }
 
     /* Window / Frame Switching */
